@@ -12,5 +12,11 @@
     <x-component>
         <div>hello</div>
     </x-component>
+
+    <script>
+        setTimeout(() => {
+            Ocomponent.triggerEvent(document.body, 'foo', {'detail': {'blubber': true}});
+        }, 3000);
+    </script>
 </body>
 </html>

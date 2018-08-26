@@ -18,6 +18,10 @@ Ocomponent.defineElement('x-component', (function(){
             this.querySelector('div').innerHTML += ' <strong>World!</strong>';
             var other = document.createElement('x-other');
             this.appendChild(other);
+
+            this.on('foo', function(e) {
+                console.log('event222 got cha', e);
+            });
         }
     };
 }()));
@@ -34,17 +38,11 @@ Ocomponent.defineElement('x-other', (function(){
         }
 
         domReady() {
-            // well now you can do dom manipulation
-            // you could also do stuff like React.render in here. why not?
-            console.log('this2 is ready>>>', this.innerHTML);
-
-            this.require(['x-component']).then(() => this.start());
+            this.start();
         }
 
         start() {
-            this.innerHTML = 'Hello I am an automatically mounted x-other component';
+            this.innerHTML = 'Hello I am an automatically mounted <strong>x-other</strong> component';
         }
     };
 }()));
-
-// customElements.define('x-component', MyTest);
