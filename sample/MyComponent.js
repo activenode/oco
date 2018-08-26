@@ -4,21 +4,18 @@ Ocomponent.defineElement('x-component', (function(){
 
     return class extends Ocomponent {
         onLoad() {
-            console.log('onLoad2');
+            console.log('onLoad: x-component');
             // you could start fetching data in here
         }
 
         domReady() {
-            // well now you can do dom manipulation
-            // you could also do stuff like React.render in here. why not?
-            console.log('this is ready>>>', this.innerHTML);
-
             this.require([
                 'x-other'
             ]).then(() => this.start());
         }
 
         start() {
+            this.querySelector('div').innerHTML += ' <strong>World!</strong>';
             var other = document.createElement('x-other');
             this.appendChild(other);
         }
