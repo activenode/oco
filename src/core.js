@@ -139,7 +139,7 @@ window.CustomEvent = CustomEvent;
         const children = rootElement.querySelectorAll('[o-component]');
         const eventDataObj = {detail: {}};
         eventDataObj.detail = Object.assign({ sourceElement: rootElement }, eventData);
-        const customEvent = new CustomEvent(eventName, eventData);
+        const customEvent = new CustomEvent(eventName, eventDataObj);
 
         if (children) {
             [].forEach.call(children, ocoElement => {
