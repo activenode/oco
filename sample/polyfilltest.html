@@ -9,6 +9,32 @@
 <body>
     <script src="polyfill.js"></script>
 
-    <x-test></x-test>
+    <x-load>
+        <x-inner></x-inner>
+    </x-load>
+
+    <x-wums>
+        <div>wums</div>
+        <x-inner></x-inner>
+        <div>wums danach</div>
+    </x-wums>
+
+    <script>
+        setTimeout(function() {
+            var n = document.createElement('x-new');
+            document.body.appendChild(n);
+
+            setTimeout(function(){
+                document.defineElement('x-new', {
+                    createdCallback: function(){},
+                    attachedCallback: function() {
+                        this.innerHTML = ''
+                            +'<div><strong>LATE BINDING ha</strong> <x-inner><x-inner></div>'
+                                +'<div><div><x-inner>otter</x-inner></div></div>';
+                    }
+                });
+            }, 1000);
+        }, 2000);
+    </script>
 </body>
 </html>
