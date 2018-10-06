@@ -34,6 +34,12 @@
 
             // TODO: hook into document.createElement to be able to check *createdCallback*
             // TODO: watch new changes via MutationObserver
+            // TODO: reading dom nodes when DOMContentLoaded is done
+            if (document.readyState === 'loading') {
+                alert('wait for domcontentloaded');
+            } else {
+                alert('parse html');
+            }
         }
     };
 
