@@ -1,15 +1,76 @@
-(function(_document){
+var installCE = function(_document){
+    var NODE_UPGRADED_KEY = '__oco_upgraded_node__';
+    var _componentsDefined = [];
+    var _PF_componentsLibrary = {};
+
+    function isComponentDefined(elementName) {
+        return _componentsDefined.indexOf(elementName) !== -1;
+    }
+
+    function getUpgradeableNodes(elementName) {
+        const componentsSelect = document.querySelectorAll(
+            Array.isArray(elementName) ? elementName.join(',') : elementName
+        );
+
+        if (componentsSelect.length === 0) {
+            return [];
+        }
+
+        return [].filter.call(componentsSelect, function(domElement) {
+            return !domElement[NODE_UPGRADED_KEY];
+        });
+    }
+
+    function _upgradeNode(domElement) {
+        if (!domElement[NODE_UPGRADED_KEY]) {
+            const tagName = domElement.tagName.toLowerCase();
+            const upgradePrototype = _PF_componentsLibrary[tagName];
+
+            if (upgradePrototype) {
+                Object.setPrototypeOf(domElement, upgradePrototype);
+                domElement.createdCallback();
+                // TODO: check if createdCallback was fired already! if yes: dont fire!
+                domElement.attachedCallback();
+            } else {
+                console.error('Cannot upgrade', domElement, ' the prototype definition is not available');
+            }
+        }
+    }
+
+    if (_document.readyState === 'loading') {
+        _document.addEventListener('DOMContentLoaded', function() {
+            // TODO: setup mutationobserver to be able to catch createdCallback innerHTML calls etc.
+
+            if (_componentsDefined.length > 0) {
+                getUpgradeableNodes(_componentsDefined).forEach(_upgradeNode);
+            }
+        });
+    }
+
+    /**
+     * // TODO: hook into document.createElement to be able to check *createdCallback*
+            // TODO: watch new changes via MutationObserver
+            // TODO: reading dom nodes when DOMContentLoaded is done
+            if (document.readyState === 'loading') {
+                alert('wait for domcontentloaded');
+            } else {
+                alert('parse html');
+            }
+     */
+
     _document.defineElement = function(elementName, methodsObj) {
-        var getHtmlElementObject = function() {
-            var elem = Object.create(HTMLElement.prototype);
-            Object.keys(methodsObj).forEach(key => elem[key] = methodsObj[key]);
-            return elem;
+        var getHtmlElementProto = function() {
+            var prototype = Object.create(HTMLElement.prototype);
+            prototype[NODE_UPGRADED_KEY] = true;
+            Object.keys(methodsObj).forEach(key => prototype[key] = methodsObj[key]);
+            return prototype;
         }
 
         if (false && 'customElements' in window) {
             customElements.define(elementName, class extends HTMLElement {
                 constructor() {
                     super();
+                    this[NODE_UPGRADED_KEY] = true;
                     methodsObj.createdCallback.call(this);
                 }
 
@@ -26,28 +87,27 @@
                 }
             });
         } else if (false && 'registerElement' in _document) {
-            document.registerElement(elementName, {
-                prototype: getHtmlElementObject()
+            _document.registerElement(elementName, {
+                prototype: getHtmlElementProto()
             });
         } else {
-            var elem = getHtmlElementObject();
+            _PF_componentsLibrary[elementName] = getHtmlElementProto();
 
-            // TODO: hook into document.createElement to be able to check *createdCallback*
-            // TODO: watch new changes via MutationObserver
-            // TODO: reading dom nodes when DOMContentLoaded is done
-            if (document.readyState === 'loading') {
-                alert('wait for domcontentloaded');
-            } else {
-                alert('parse html');
-            }
+            if (_document.readyState !== 'loading') {
+                const upgradeableNodes = getUpgradeableNodes(elementName);
+                // TODO: upgrade these nodes!
+            } // else: not needed because there is a global event listening!
         }
+
+        _componentsDefined.push(elementName);
+        console.log('>xo', _componentsDefined);
     };
 
     _document.defineElement('x-test', {
         createdCallback: function() {
             // DO NOT DO DOM MANIPULATIONS HERE!!!
             // maybe load data or whatever!
-            console.log('created');
+            console.log('created', this);
         },
 
         attachedCallback: function() {
@@ -58,4 +118,6 @@
             console.log('was detached', this);
         }
     });
-}(document));
+};
+
+installCE(document);
