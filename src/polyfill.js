@@ -1,4 +1,4 @@
-var _oco_installOnDocument = (function(){
+var _OCO_INSTALL = (function(){
   var NODE_TYPE_TEXT = 3;
   var OCO_ATTR = 'oco';
   var OCO_ATTR_NOT_SELECTOR = ':not(['+OCO_ATTR+'])';
@@ -179,5 +179,3 @@ var _oco_installOnDocument = (function(){
 
   return _installer;
 }());
-
-_oco_installOnDocument(document);
