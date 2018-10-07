@@ -1,3 +1,24 @@
+(function () {
+  if ( typeof window.CustomEvent === "function" ) return false; //If not IE
+
+function CustomEvent ( event, params ) {
+    params = params || { bubbles: false, cancelable: false, detail: undefined };
+    var evt = document.createEvent( 'CustomEvent' );
+    evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+    }
+
+CustomEvent.prototype = window.Event.prototype;
+
+window.CustomEvent = CustomEvent;
+})();
+
+//---------------------------------------
+/**
+ * @name oco - one component library
+ * @author David Lorenz <info@activenode.de>
+ */
+
 var _OCO_INSTALL = (function(){
   var NODE_TYPE_TEXT = 3;
   var OCO_ATTR = 'oco';
