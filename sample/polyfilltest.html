@@ -38,6 +38,21 @@
                 const n = document.createElement('div');
                 n.innerHTML = 'hello <strong>world</strong><x-other></x-other>';
                 this.appendChild(n);
+
+                this.on('click.hammock', function(){
+                    console.log('hammock was clicked yo', this);
+                });
+
+                var refd = function(){
+                    console.log('hammock2!! was clicked yo', this);
+                };
+                this.on('click.hammock2', refd);
+
+                this.on('click.hammock2', function(){
+                    console.log('hammock2.2!! was clicked yo', this);
+                });
+
+                this.off('click.hammock2', refd);
             },
 
             detachedCallback: function() {
