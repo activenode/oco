@@ -1,210 +1,183 @@
+var _oco_installOnDocument = (function(){
+  var NODE_TYPE_TEXT = 3;
+  var OCO_ATTR = 'oco';
+  var OCO_ATTR_NOT_SELECTOR = ':not(['+OCO_ATTR+'])';
+  var NODE_UPGRADED_PROTO_KEY = '__oco_upgraded_node__';
 
-/***
- * Hint:
- * The loading with customElements definition in mixed custom elements is as follows:
- *
- * <x-foo>
- *  <x-bar></x-bar>
- * </x-foo>
- *
- * --> This will first load an empty x-foo element and AFTER that instantiate the x-bar one
- */
-
-
-var installCE = function(_document){
-    var NODE_TYPE_TEXT = 3;
-    var NODE_UPGRADED_KEY = '__oco_upgraded_node__';
+  var _installer = function(_document){
     var _componentsDefined = [];
     var _PF_componentsLibrary = {};
 
     function _isPolyfillRequired() {
-        return !('registerElement' in _document) && !('customElements' in window);
+      return !('registerElement' in _document) && !('customElements' in window);
     }
 
     function _isComponentDefined(elementName) {
-        return _componentsDefined.indexOf(elementName) !== -1;
+      return _componentsDefined.indexOf(elementName) !== -1;
     }
 
-    function _containsCustomElements(domElement) {
-        if (_componentsDefined.length === 0) {
-            return false;
-        }
-        return domElement.querySelectorAll(_componentsDefined.join(',')).length > 0;
+    function _containsUnitializedCustomElements(domElement) {
+      if (_componentsDefined.length === 0) {
+        return false;
+      }
+      return domElement.querySelectorAll(
+        _componentsDefined.map(function(_) {
+          return _ + OCO_ATTR_NOT_SELECTOR;
+        }).join(',')
+      ).length > 0;
     }
 
     function _PF_setupHtmlObserver(observerCallback) {
-        var observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                var addedNodes = mutation.addedNodes;
-                var removedNodes = mutation.removedNodes;
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          var addedNodes = mutation.addedNodes;
+          var removedNodes = mutation.removedNodes;
 
-                //TODO: process removedNodes first??
+          //TODO: process removedNodes first??
 
-                [].forEach.call(addedNodes, function(domElement) {
-                    _recursiveTreeUpgrade(domElement);
-                });
-            });
+          [].forEach.call(addedNodes, function(domElement) {
+            _PF_recursiveTreeUpgrade(domElement);
+          });
         });
+      });
 
-        var config = {
-            attributes: false,
-            childList: true,
-            characterData: false,
-            subtree: true
-        };
+      var config = {
+        attributes: false,
+        childList: true,
+        characterData: false,
+        subtree: true
+      };
 
-        observer.observe(_document, config);
+      observer.observe(_document, config);
     }
 
     function _PF_getUpgradeableNodes(elementName) {
-        var componentsSelect = document.querySelectorAll(
-            Array.isArray(elementName) ? elementName.join(',') : elementName
-        );
+      if (!Array.isArray(elementName)) {
+        elementName = [elementName];
+      }
+      var componentsSelect = _document.querySelectorAll(
+        elementName.map(function(n) {
+          return n + OCO_ATTR_NOT_SELECTOR;
+        }).join(',')
+      );
+      if (componentsSelect.length === 0) {
+        return [];
+      }
 
-        if (componentsSelect.length === 0) {
-            return [];
-        }
-
-        return [].filter.call(componentsSelect, function(domElement) {
-            return !domElement[NODE_UPGRADED_KEY];
-        });
+      return [].map.call(componentsSelect, function(_) { return _; });
     }
 
     function _PF_upgradeNode(domElement) {
-        if (!domElement[NODE_UPGRADED_KEY]) {
-            var tagName = domElement.tagName.toLowerCase();
-            var upgradePrototype = _PF_componentsLibrary[tagName];
+      if (!domElement[NODE_UPGRADED_PROTO_KEY]) {
+        var tagName = domElement.tagName.toLowerCase();
+        var upgradePrototype = _PF_componentsLibrary[tagName];
 
-            if (upgradePrototype) {
-                domElement.setAttribute('id', 'some_rand_id__'+Math.round(Math.random() * 10000));
-                Object.setPrototypeOf(domElement, upgradePrototype);
-                domElement.createdCallback();
-                // TODO: check if createdCallback was fired already! if yes: dont fire!
-                domElement.attachedCallback();
-            } else {
-                console.error('Cannot upgrade', domElement, ' the prototype definition is not available');
-            }
+        if (upgradePrototype) {
+          Object.setPrototypeOf(domElement, upgradePrototype);
+          domElement.createdCallback();
+          // TODO: check if createdCallback was fired already! if yes: dont fire!
+          domElement.attachedCallback();
+        } else {
+          console.error('Cannot upgrade', domElement, ' the prototype definition is not available');
         }
+      }
     }
 
-    function _recursiveTreeUpgrade(domElement) {
-        if (domElement.nodeType === NODE_TYPE_TEXT) {
-            return;
-        }
+    function _PF_recursiveTreeUpgrade(domElement) {
+      if (domElement.nodeType === NODE_TYPE_TEXT) {
+        return;
+      }
 
-        console.log('go recursive on', domElement, domElement.nodeType);
-        var tagName = domElement.tagName.toLowerCase();
-        if (_isComponentDefined(tagName)) {
-            // seems to be a custom component
-            _PF_upgradeNode(domElement);
-        }
+      var tagName = domElement.tagName.toLowerCase();
+      if (_isComponentDefined(tagName)) {
+        // seems to be a custom component
+        _PF_upgradeNode(domElement);
+      }
 
-        if (_containsCustomElements(domElement)) {
-            // dig deeper!
-            [].forEach.call(domElement.childNodes, function(childDomElement) {
-                _recursiveTreeUpgrade(childDomElement);
-            });
-        } // else: done
+      if (_containsUnitializedCustomElements(domElement)) {
+        // dig deeper!
+        [].forEach.call(domElement.childNodes, function(childDomElement) {
+          _PF_recursiveTreeUpgrade(childDomElement);
+        });
+      } // else: done
     }
 
     if (_isPolyfillRequired()) {
-        if (_document.readyState === 'loading') {
-            _document.addEventListener('DOMContentLoaded', function() {
-                _PF_setupHtmlObserver();
+      if (_document.readyState === 'loading') {
+        _document.addEventListener('DOMContentLoaded', function() {
+          _PF_setupHtmlObserver();
 
-                if (_componentsDefined.length > 0) {
-                    _PF_getUpgradeableNodes(_componentsDefined).forEach(_PF_upgradeNode);
-                }
-            });
-        } else {
-            _PF_setupHtmlObserver();
-        }
+          if (_componentsDefined.length > 0) {
+            _PF_getUpgradeableNodes(_componentsDefined).forEach(_PF_upgradeNode);
+          }
+        });
+      } else {
+        _PF_setupHtmlObserver();
+      }
     }
 
     _document.defineElement = function(elementName, methodsObj) {
-        var getHtmlElementProto = function() {
-            var prototype = Object.create(HTMLElement.prototype);
-            prototype[NODE_UPGRADED_KEY] = true;
-            Object.keys(methodsObj).forEach(function(key) {
-                prototype[key] = methodsObj[key]
-            });
-            return prototype;
+      var attachedCallbackOrig = methodsObj.attachedCallback;
+      var attachedCallback = function() {
+        this.setAttribute(OCO_ATTR, '');
+
+        if (attachedCallbackOrig) {
+          attachedCallbackOrig.call(this);
         }
+      };
 
-        if ('customElements' in window) {
-            var evalClass = eval('(function(){'
-                + 'return class extends HTMLElement {'
-                    + 'constructor() {'
-                        + ' super();'
-                        + ' this[\''+NODE_UPGRADED_KEY+'\'] = true;'
-                        + 'methodsObj.createdCallback.call(this);'
-                    + '}'
+      var getHtmlElementProto = function() {
+        var prototype = Object.create(HTMLElement.prototype);
+        prototype[NODE_UPGRADED_PROTO_KEY] = true;
+        Object.keys(methodsObj).forEach(function(key) {
+          prototype[key] = methodsObj[key]
+        });
 
-                    + 'connectedCallback() {'
-                        + 'if (\'attachedCallback\' in methodsObj) {'
-                            + 'methodsObj.attachedCallback.call(this);'
-                        + '}'
-                    + '}'
+        prototype.attachedCallback = attachedCallback;
 
-                    + 'disconnectedCallback() {'
-                        + 'if (\'detachedCallback\' in methodsObj) {'
-                            + 'methodsObj.detachedCallback.call(this);'
-                        + '}'
-                    + '}'
-                + '}'
-            + '}());');
+        return prototype;
+      }
 
-            customElements.define(elementName, evalClass);
-        } else if ('registerElement' in _document) {
-            _document.registerElement(elementName, {
-                prototype: getHtmlElementProto()
-            });
-        } else {
-            _PF_componentsLibrary[elementName] = getHtmlElementProto();
+      if ('customElements' in window) {
+        var evalClass = eval('(function(){'
+        + 'return class extends HTMLElement {'
+        + 'constructor() {'
+        + ' super();'
+        + ' this[NODE_UPGRADED_PROTO_KEY] = true;'
+        + ' methodsObj.createdCallback.call(this);'
+        + '}'
 
-            if (_document.readyState !== 'loading') {
-                var upgradeableNodes = _PF_getUpgradeableNodes(elementName);
-                upgradeableNodes.forEach(_PF_upgradeNode);
-            } // else: not needed because there is a global event listening!
-        }
+        + 'connectedCallback() {'
+        + 'attachedCallback.call(this);'
+        + '}'
 
-        _componentsDefined.push(elementName);
+        + 'disconnectedCallback() {'
+        + 'if (\'detachedCallback\' in methodsObj) {'
+        + 'methodsObj.detachedCallback.call(this);'
+        + '}'
+        + '}'
+        + '}'
+        + '}());');
+
+        customElements.define(elementName, evalClass);
+      } else if ('registerElement' in _document) {
+        _document.registerElement(elementName, {
+          prototype: getHtmlElementProto()
+        });
+      } else {
+        _PF_componentsLibrary[elementName] = getHtmlElementProto();
+
+        if (_document.readyState !== 'loading') {
+          var upgradeableNodes = _PF_getUpgradeableNodes(elementName);
+          upgradeableNodes.forEach(_PF_upgradeNode);
+        } // else: not needed because there is a global event listening!
+      }
+
+      _componentsDefined.push(elementName);
     };
+  };
 
-    _document.defineElement('x-inner', {
-        createdCallback: function() {
-            // DO NOT DO DOM MANIPULATIONS HERE!!!
-            // maybe load data or whatever!
-            console.log('created', this);
-        },
+  return _installer;
+}());
 
-        attachedCallback: function() {
-            // DO NOT USE innerHTML! This is the baddest thing for computation that can be done!
-            this.innerHTML = '<div>i am dynmaically added innertext</div>';
-            this.style.display = 'block';
-            this.style.marginLeft = '20px';
-        },
-
-        detachedCallback: function() {
-            console.log('was detached', this);
-        }
-    });
-
-    _document.defineElement('x-load', {
-        createdCallback: function() {
-            // DO NOT DO DOM MANIPULATIONS HERE!!!
-            // maybe load data or whatever!
-            console.log('created', this);
-        },
-
-        attachedCallback: function() {
-            console.log(this.innerHTML + '<<');
-        },
-
-        detachedCallback: function() {
-            console.log('was detached', this);
-        }
-    });
-};
-
-installCE(document);
+_oco_installOnDocument(document);

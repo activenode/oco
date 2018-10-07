@@ -9,32 +9,40 @@
 <body>
     <script src="polyfill.js"></script>
 
-    <x-load>
-        <x-inner></x-inner>
-    </x-load>
+    <wb-custom>
 
-    <x-wums>
-        <div>wums</div>
-        <x-inner></x-inner>
-        <div>wums danach</div>
-    </x-wums>
+    </wb-custom>
 
     <script>
-        setTimeout(function() {
-            var n = document.createElement('x-new');
-            document.body.appendChild(n);
+        document.defineElement('x-other', {
+            createdCallback: function() {
+                console.log('CONSTRUCTOR', this);
+            },
 
-            setTimeout(function(){
-                document.defineElement('x-new', {
-                    createdCallback: function(){},
-                    attachedCallback: function() {
-                        this.innerHTML = ''
-                            +'<div><strong>LATE BINDING ha</strong> <x-inner><x-inner></div>'
-                                +'<div><div><x-inner>otter</x-inner></div></div>';
-                    }
-                });
-            }, 1000);
-        }, 2000);
+            attachedCallback: function() {
+                this.innerHTML = 'other works as well!';
+            },
+
+            detachedCallback: function() {
+
+            }
+        });
+
+        document.defineElement('wb-custom', {
+            createdCallback: function() {
+                console.log('CONSTRUCTOR', this);
+            },
+
+            attachedCallback: function() {
+                const n = document.createElement('div');
+                n.innerHTML = 'hello <strong>world</strong><x-other></x-other>';
+                this.appendChild(n);
+            },
+
+            detachedCallback: function() {
+
+            }
+        });
     </script>
 </body>
 </html>
