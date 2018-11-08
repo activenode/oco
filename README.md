@@ -29,20 +29,21 @@ which will enable you to use `<some-tag-name>` as WebComponent in your HTML. No 
 
 ## Yet another web component library? Why?
 
-We were trying to find the most minimal set of code to support the minimal and portable integration of web components without affecting existing code.
+We were trying to find a *minimal set of code to support the minimal and portable integration of web components* without affecting existing code.
 This is *not* a polyfill and we are *not* manipulating existing functions so you have nothing to fear.
 
-*So how you are doing this*?
-tl;dr: You give us
+### So how you are doing this?
+tl;dr: You give us ([v0 API compatibility definition](https://www.html5rocks.com/en/tutorials/webcomponents/customelements/))
+
 ```javascript
 {
-    createdCallback,
-    attachedCallback,
-    detachedCallback
+    createdCallback: Function,
+    attachedCallback: Function,
+    detachedCallback: Function
 }
 ```
 
-and we will run it with the native `customElements` or `document.registerElement` if available. If not (e.g. in IE11) we will use a standard mechanism with `MutationObserver` and `setPrototypeOf` to enable the same behaviour.
+and we will run it with the native `customElements` or `document.registerElement` if available. If not (e.g. in IE11):  `MutationObserver` and `setPrototypeOf`.
 
 
 ## Do you ship this with ShadowDOM?
