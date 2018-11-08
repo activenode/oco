@@ -7,13 +7,24 @@ Basically it is
 
 ```javascript
 document.defineElement('some-tag-name', {
-    createdCallback: Function,
-    attachedCallback: Function,
-    detachedCallback: Function
+    createdCallback: ...,
+    attachedCallback: function() {
+        this.innerHTML = '<strong>Hello World!</strong>';
+    },
+    detachedCallback: ...
 })
 ```
 
-which will enable you to use `<some-tag-name>` as WebComponent in your HTML. No weird magic involved.
+```html
+// index.html, source
+...
+<some-tag-name></some-tag-name>
+
+// index.html, page load
+<some-tag-name>Hello World!</some-tag-name>
+```
+
+which will enable you to use `<some-tag-name>` as WebComponent in your HTML. No weird magic involved and no requirement to struggle with any build setup.
 
 
 ## Yet another web component library? Why?
