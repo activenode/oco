@@ -1,0 +1,9 @@
+{
+  "name": "oco",
+  "version": "0.1.0",
+  "description": "A system to allow a minimal set of web components",
+  "main": "index.js",
+  "repository": "git@github.com:activenode/oco.git",
+  "author": "David Lorenz <David.Lorenz@mercedes-benz.io>",
+  "license": "MIT"
+}
