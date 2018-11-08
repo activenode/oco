@@ -54,4 +54,6 @@ This has nothing to do with a polyfill. This is a wrapper that works in IE11, Ch
 
 ## Usage / Documentation:
 
-TODO
+### "Installing" the `defineElement` function
+
+We wanted to explicitly **not** do magic. That means: Using our code will do **nothing** until you trigger it. It exposes
