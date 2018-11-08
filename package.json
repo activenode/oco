@@ -5,5 +5,8 @@
   "main": "index.js",
   "repository": "git@github.com:activenode/oco.git",
   "author": "David Lorenz <David.Lorenz@mercedes-benz.io>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "parcel-bundler": "^1.10.3"
+  }
 }
