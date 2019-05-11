@@ -7,10 +7,11 @@
   "author": "David Lorenz <David.Lorenz@mercedes-benz.io>",
   "license": "MIT",
   "devDependencies": {
+    "cypress": "^3.2.0",
     "parcel-bundler": "^1.10.3"
   },
   "scripts": {
-    "build": "mkdir -p ./dist && rm -rf ./dist/* 2>/dev/null ; ./node_modules/parcel-bundler/bin/cli.js build src/index.js src/sample/sample1.html; cp ./dist/sample/* ./dist/; rm -rf ./dist/sample"
+    "build": "mkdir -p ./dist && rm -rf ./dist/* 2>/dev/null ; ./node_modules/parcel-bundler/bin/cli.js build src/index.js src/tests/*.html"
   },
   "browserslist": [
     "last 3 versions",
