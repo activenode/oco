@@ -41,6 +41,8 @@ tl;dr: You give us ([v0 API compatibility definition](https://www.html5rocks.com
     attachedCallback: Function,
     detachedCallback: Function
 }
+
+//^ a definition always needs all of them!
 ```
 
 and we will run it with the native `customElements` or `document.registerElement` if available. If not (e.g. in IE11):  `MutationObserver` and `setPrototypeOf`.
@@ -56,4 +58,6 @@ This has nothing to do with a polyfill. This is a wrapper that works in IE11, Ch
 
 ### "Installing" the `defineElement` function
 
-We wanted to explicitly **not** do magic. That means: Using our code will do **nothing** until you trigger it. It exposes
+We wanted to explicitly **not** do magic. That means: Using our code will do **nothing** until you trigger it.
+It exposes a `_OCO_INSTALL( [HTMLDocument] )` function. The reason why it needs the document is that it could
+potentially be installed on iframes or virtual / new documents.
