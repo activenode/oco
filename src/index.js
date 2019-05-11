@@ -19,7 +19,7 @@ window.CustomEvent = CustomEvent;
  * @author David Lorenz <info@activenode.de>
  */
 
-var _OCO_INSTALL = (function(){
+window._OCO_INSTALL = (function(){
   var _forEach = function(list, loopFunc) {
     return [].forEach.call(list, loopFunc);
   };
@@ -76,11 +76,20 @@ var _OCO_INSTALL = (function(){
       if (_componentsDefined.length === 0) {
         return false;
       }
-      return domElement.querySelectorAll(
-        _componentsDefined.map(function(_) {
-          return _ + OCO_ATTR_NOT_SELECTOR;
-        }).join(',')
-      ).length > 0;
+
+      if (!_document.body.contains(domElement)) {
+        // IE11 throws syntax error on pseudo selectors that are within detached elements
+        // this is okay since this function anyway should only be necessary for attached ones
+        // detached ones that are going to be attached should be triggered by mutationobserver - hopefully :P
+        return false;
+      }
+
+      var uninitializedComponentsSelector = _componentsDefined.map(function(_) {
+        return _ + OCO_ATTR_NOT_SELECTOR;
+      }).join(',');
+
+      var selectUnitializedComponents = domElement.querySelectorAll(uninitializedComponentsSelector);
+      return selectUnitializedComponents.length > 0;
     }
 
     function _PF_setupHtmlObserver(observerCallback) {
@@ -246,7 +255,6 @@ var _OCO_INSTALL = (function(){
               return;
             } // else: there is a value for this namespace!
 
-            console.log('wat this', eventKey, eventListenersRef[eventKey].get(eventNs));
             deleteListeners(eventNs, eventListenersRef[eventKey].get(eventNs));
           }
         };
@@ -278,8 +286,6 @@ var _OCO_INSTALL = (function(){
 
         var detachedCallback = (function(_detachedCallback) {
           return function() {
-            console.log('removing from DOM', this);
-
             if (_detachedCallback) {
               _detachedCallback.call(this);
             }
