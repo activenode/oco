@@ -1,8 +1,8 @@
 /// <reference types="Cypress" />
 
-context('textTag - postInstalled', () => {
+context('textTag - preInstalled', () => {
     beforeEach(() => {
-      cy.visit('http://localhost:8734/preloaded-script/textTag-postinstalled.html')
+      cy.visit('http://localhost:8734/textTag-preinstalled.html')
     })
   
     // https://on.cypress.io/interacting-with-elements

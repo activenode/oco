@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>textTag - preloaded, blocking script - preinstalled</title>
+    <script src="../index.js"></script>
+    <script>
+        _OCO_INSTALL(document);
+
+        document.defineElement('x-init', {
+            createdCallback: function(){},
+            detachedCallback: function(){},
+            attachedCallback: function() {
+                this.innerHTML = '<x-inner></x-inner>';
+            }
+        })
+    </script>
+</head>
+<body>
+    <x-init>
+
+    </x-init>
+
+    <script>
+        document.defineElement('x-inner', {
+            createdCallback: function(){},
+            detachedCallback: function(){},
+            attachedCallback: function() {
+                this.innerHTML = 'attachedInner';
+            }
+        })
+    </script>
+</body>
+</html>

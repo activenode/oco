@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>textTag - preloaded, blocking script - preinstalled</title>
+    <script src="../index.js"></script>
+    <script>
+        _OCO_INSTALL(document);
+
+        document.defineElement('x-init', {
+            createdCallback: function(){},
+            detachedCallback: function(){},
+            attachedCallback: function() {
+                this.innerHTML = '<x-late></x-late>';
+            }
+        })
+    </script>
+</head>
+<body>
+    <x-init>
+
+    </x-init>
+
+    <script>
+        setTimeout(function(){
+            document.defineElement('x-late', {
+                createdCallback: function(){},
+                detachedCallback: function(){},
+                attachedCallback: function() {
+                    this.innerHTML = 'late-rendered';
+                }
+            })
+        }, 1400);
+    </script>
+</body>
+</html>
